@@ -16,8 +16,9 @@ The method, with every implemented equation, is in [docs/methodology.md](docs/me
 
 ## Honesty rules built into the code
 
-- **Nothing here runs or imitates HFSS or CST.** `HFSSAdapter` / `CSTAdapter` are stubs that raise
-  `NotImplementedError`. Real full-wave results enter only by upload.
+- **No fake HFSS.** Full-wave results come only from a real HFSS run (two-PC automation, see
+  [docs/hfss_automation.md](docs/hfss_automation.md)) or from your upload. The MOCK solver that tests the
+  pipeline is labeled `MOCK_SOLVER` ("software test only, not physics") and cannot be mixed with real data.
 - Every response carries a fidelity label: `PREDICTED`, `VALIDATED_SIMULATION`, `MEASURED`,
   `REPORTED`, `REPORTED_PLOT_DIGITIZED`, or `SYNTHETIC_ANALYTIC_ORACLE`. Loaded data can never be
   labeled `PREDICTED`, and predictions never enter the training set.
@@ -80,7 +81,7 @@ Examples:
 ## Dashboard tabs
 
 Dashboard · Dataset · Geometry · EM Response · Baseline Analysis · Optimization · Candidate Designs ·
-Existing Paper · Model Comparison · Ablation Study · Results · Export · Experiment Log.
+High-Fidelity Simulation · Existing Paper · Model Comparison · Ablation Study · Results · Export · Experiment Log.
 Predicted values carry a green PREDICTED badge; evaluated values show their own fidelity badge.
 
 ## Layout
@@ -97,7 +98,9 @@ metasurface_optimizer/
                    NSGA-II, DE, PSO, BO, baselines, stopping rules, Pareto/hypervolume
   evaluation/      metrics, multi-seed statistics, robustness, plots, reports, ablation
   ingestion/       PDF extraction, plot digitizer, design reconstruction (evaluation feature only)
-  solvers/         solver interface, budgeted evaluator, synthetic oracle, HFSS/CST stubs
+  solvers/         solver interface, budgeted evaluator, synthetic oracle
+  simulation/      two-PC HFSS automation: templates, job packages, adapters, transports, mock, manager
+hfss_worker/       runs on the HFSS PC (standard library + PyAEDT): worker, validator, run_hfss.py runner
   tracking/        experiment record and SQLite repository
   api/             FastAPI backend
 ui/                React + Vite + Tailwind + Plotly dashboard
@@ -106,7 +109,7 @@ configs/ docs/ examples/ tests/
 
 ## Status
 
-**Complete and tested** (65 tests): parameter schema and geometry generation; geometry validation;
+**Complete and tested** (98 tests; 12 more run only on the HFSS PC): parameter schema and geometry generation; geometry validation;
 STL export (per-layer watertight) and STL inspection; S-parameter/RCS I/O; objectives O1–O9 with
 three normalizations; physics losses; seven surrogate families plus the heterogeneous ensemble;
 local sensitivity (central difference, or a local linear fit after an LHS start); counterfactual
@@ -128,8 +131,13 @@ plot digitizing and reconstruction confidence.
 - Ablations cover A2, A3, A5, A7, A9, A10 and A11 (surrogate swaps); the remaining A-items are
   configuration switches but are not in the default ablation run.
 
+**HFSS automation (two PCs)**: implemented; tested end to end with the MOCK solver and a fake PyAEDT
+(manual transfer, shared-folder queue, retries, timeouts, budget, template verification gate, baseline
+reproduction gate, predicted-vs-simulated feedback, UI tab). **Not yet run against real HFSS**: that needs
+`tests/hfss` (12 checks) to pass on the HFSS PC with a verified template. See docs/hfss_automation.md.
+
 **Not done**
-- HFSS/CST automation (adapters are stubs; use uploads).
+- A real HFSS run; CST automation; the network (REST) transfer mode; bistatic RCS extraction from HFSS.
 - Any validation against real full-wave or measured data. All reported numbers are on the synthetic oracle.
 
 ## Results on the synthetic demo

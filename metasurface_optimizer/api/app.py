@@ -573,6 +573,10 @@ def benchmarks():
     return out
 
 
+from metasurface_optimizer.api.simulation_routes import register as _register_simulation  # noqa: E402
+
+_register_simulation(app, get_session, J, WORKSPACE)
+
 _UI = ROOT / "ui" / "dist"
 if _UI.exists():
     app.mount("/", StaticFiles(directory=_UI, html=True), name="ui")

@@ -401,7 +401,7 @@ class SimulationManager:
         import matplotlib.pyplot as plt
         lab = {"HFSS": "HFSS (validated)", "MOCK": "MOCK (software test, not physics)"}.get(self.mode, self.mode)
         fig, axes = plt.subplots(1, 2, figsize=(9, 3.4))
-        axes[0].plot([r["n_hfss"] for r in rows], [r["J_best"] for r in rows], marker="o", lw=2, color="#2a6fdb")
+        axes[0].plot([r["n_hfss"] for r in rows], [r["J_best"] for r in rows], marker="o", lw=2, color="#2a6fdb", drawstyle="steps-post")
         axes[0].set_xlabel("simulations used (N_HFSS)")
         axes[0].set_ylabel("best composite objective J_best")
         axes[0].set_title(f"Best {lab} design", fontsize=9)

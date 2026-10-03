@@ -4,6 +4,7 @@ import { Dashboard, Dataset, ExperimentLog } from "./tabs/Study.jsx";
 import { Geometry, EMResponse, BaselineAnalysis } from "./tabs/Design.jsx";
 import { Optimization, Candidates, Results, Export } from "./tabs/Optimize.jsx";
 import { PaperEvaluation, ModelComparison, Ablation } from "./tabs/Evaluate.jsx";
+import { Simulation } from "./tabs/Simulation.jsx";
 
 const TABS = [
   ["Dashboard", Dashboard],
@@ -13,6 +14,7 @@ const TABS = [
   ["Baseline Analysis", BaselineAnalysis],
   ["Optimization", Optimization],
   ["Candidate Designs", Candidates],
+  ["High-Fidelity Simulation", Simulation],
   ["Existing Paper", PaperEvaluation],
   ["Model Comparison", ModelComparison],
   ["Ablation Study", Ablation],
