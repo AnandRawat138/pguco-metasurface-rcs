@@ -12,14 +12,16 @@ import pytest
 from metasurface_optimizer.data.public_datasets.fssdatabase import FSSDataBaseAdapter
 
 
-def _write_sample(root, sid, n_layers, nan_30=False):
+def _write_sample(root, sid, n_layers, nan_30=False, only_0=False, gain_30=False):
     d = root / "datasets" / sid
     d.mkdir(parents=True)
     f = np.round(np.linspace(10, 20, 101), 1)
     rows = []
-    for ang in (0.0, 30.0):
+    for ang in ((0.0,) if only_0 else (0.0, 30.0)):
         for k, fk in enumerate(f):
             db = [-4.5 - 0.1 * k, -4.7, -1.9, -1.8]
+            if gain_30 and ang == 30.0 and k == 50:
+                db[2] = 3.0
             ph = [22.6 + k, 24.9, 92.8, 93.5]
             if nan_30 and ang == 30.0 and k > 30:
                 db = [np.nan] * 4; ph = [np.nan] * 4
@@ -30,14 +32,17 @@ def _write_sample(root, sid, n_layers, nan_30=False):
     for n in range(n_layers):
         m = np.zeros((500, 500), int); m[100:400, 200 + 10 * n:300] = 1
         np.savetxt(d / f"mask_{n}.csv", m, fmt="%d", delimiter=",")
-    (d / "data.json").write_text('{"idx": %s, "unit": [0.4255, 5], "sub": {"sub1": {"material": "F4BM348", "h": 1.0}}}' % sid)
+    idx = sid if "_" not in sid else json.dumps(sid)
+    (d / "data.json").write_text('{"idx": %s, "unit": [0.4255, 5], "sub": {"sub1": {"material": "F4BM348", "h": 1.0}}}' % idx)
 
 
 @pytest.fixture
 def fss_root(tmp_path):
-    ids = ["1786866648.2374983", "1786870719.0583885", "1787441664.8019676"]
+    ids = ["1786866648.2374983", "1786870719.0583885", "1787441664.8019676", "1787883201655230500_18192_389", "1787000000.5"]
     _write_sample(tmp_path, ids[0], 2)
     _write_sample(tmp_path, ids[1], 1, nan_30=True)
+    _write_sample(tmp_path, ids[3], 1, only_0=True)
+    _write_sample(tmp_path, ids[4], 3, gain_30=True)
     (tmp_path / "datasets" / ids[2]).mkdir(parents=True)  # interrupted download: empty folder
     (tmp_path / "database").mkdir()
     con = sqlite3.connect(tmp_path / "database" / "DataBase.db")
@@ -60,11 +65,11 @@ def test_load_zero_degrees(fss_root):
     root, ids = fss_root
     ad = FSSDataBaseAdapter(root, angle=0.0, mask_size=100)
     s = ad.load()
-    assert s.masks.shape == (2, 3, 100, 100) and s.responses.shape == (2, 101, 4)
+    assert s.masks.shape == (4, 3, 100, 100) and s.responses.shape == (4, 101, 4)
     assert s.frequency[0] == pytest.approx(10e9) and s.frequency[-1] == pytest.approx(20e9)
     np.testing.assert_allclose(20 * np.log10(np.abs(s.responses[0, 0, 0])), -4.5, atol=1e-9)
     np.testing.assert_allclose(np.degrees(np.angle(s.responses[0, 0, 2])), 92.8, atol=1e-9)
-    assert [m["id"] for m in s.meta] == ids[:2]  # ids stay exact strings
+    assert [m["id"] for m in s.meta] == sorted(ids[:2] + ids[3:])  # ids stay exact strings
     assert s.meta[0]["n_layers"] == 2 and s.masks[0, 2].sum() == 0 and s.meta[0]["period_mm"] == 10.0
     assert s.meta[0]["idx"] == ids[0]
     assert len(ad.failures) == 1 and ad.failures[0]["id"] == ids[2]  # empty folder reported, not fatal
@@ -74,9 +79,10 @@ def test_nan_policy_at_30_degrees(fss_root):
     root, ids = fss_root
     ad = FSSDataBaseAdapter(root, angle=30.0)
     s = ad.load()
-    assert ad.skipped_nan == [ids[1]] and len(s.meta) == 1
-    s2 = FSSDataBaseAdapter(root, angle=30.0, nan_policy="keep").load()
-    assert np.isnan(s2.responses).any()
+    assert ad.skipped_nan == [ids[1]] and [m["id"] for m in s.meta] == [ids[0]]
+    assert ad.skipped_angle == [ids[3]] and ad.skipped_active == [ids[4]] and [f["id"] for f in ad.failures] == [ids[2]]
+    s2 = FSSDataBaseAdapter(root, angle=30.0, nan_policy="keep", drop_active=False).load()
+    assert np.isnan(s2.responses).any() and len(s2.meta) == 3
 
 
 def test_database_labels_cover_undownloaded_samples(fss_root):

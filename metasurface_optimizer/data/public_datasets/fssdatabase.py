@@ -15,7 +15,8 @@ plus 614 of the 5,607 sample folders):
     - ``raw_result.csv`` (no header, 10 columns): angle_deg, freq_GHz, S11_TE_dB, S11_TM_dB,
       S21_TE_dB, S21_TM_dB, then the four phases (deg) in the same order. One block of
       rows per incidence angle (0 deg, optionally 30 deg); 10-20 GHz in 0.1 GHz steps.
-      NaN appears as literal ``nan`` (in the local copy: only in 30-deg rows).
+      NaN appears as literal ``nan``. Full-dataset run (5,607 samples): 0 deg loads 5,604 (3 NaN);
+      30 deg loads 5,414 (107 NaN, 86 samples have no 30-deg rows) and 81 of those exceed 0 dB.
     - ``label_result.csv``: same shape, +1 where |S| > -5 dB else -1 (also -1 for NaN, so
       it is *not* a validity flag; this adapter recomputes nothing from it).
     - ``mask_<n>.csv``: 500 x 500 0/1 grid, one per metal layer (1-3 layers).
@@ -48,6 +49,10 @@ CHANNELS = ["S11_TE", "S11_TM", "S21_TE", "S21_TM"]
 DB_GRID_GHZ = np.linspace(1.0, 30.0, 300)
 
 
+class _NoAngle(ValueError):
+    pass
+
+
 def _block_downsample(mask: np.ndarray, size: int) -> np.ndarray:
     """Area-preserving downsample of a binary mask to ``size x size`` (metal fraction per block >= 0.5)."""
     H, W = mask.shape
@@ -64,9 +69,13 @@ class FSSDataBaseAdapter(PublicDatasetAdapter):
     name = "FSSDataBase"
 
     def __init__(self, root: str | Path, angle: float = 0.0, nan_policy: str = "drop_sample", max_layers: int = 3,
+                 drop_active: bool = True, active_tol_db: float = 0.1,
                  mask_size: Optional[int] = 100, max_samples: Optional[int] = None, ids: Optional[Sequence[str]] = None):
         """``angle``: incidence angle block to read (0 or 30 deg).
         ``nan_policy``: ``drop_sample`` (skip samples with any NaN at that angle; recorded) or ``keep``.
+        ``drop_active``: skip samples with any |S| above ``active_tol_db`` dB, which a passive cell cannot
+        produce (in the full dataset these occur only at 30 deg); recorded in ``skipped_active``.
+        Samples without rows at the requested angle (86 are 0-deg only) go to ``skipped_angle``.
         ``mask_size``: downsample 500 x 500 masks to this grid (None keeps full resolution).
         Masks are returned as (n, max_layers, H, W); absent layers are all-zero and
         ``meta[i]['n_layers']`` says how many are real."""
@@ -80,7 +89,11 @@ class FSSDataBaseAdapter(PublicDatasetAdapter):
         self.max_samples = max_samples
         self.ids = list(ids) if ids is not None else None
         self.failures: List[Dict[str, str]] = []
+        self.drop_active = drop_active
+        self.active_tol_db = active_tol_db
         self.skipped_nan: List[str] = []
+        self.skipped_active: List[str] = []
+        self.skipped_angle: List[str] = []
 
     # ------------------------------------------------------------ discovery
     @property
@@ -117,7 +130,7 @@ class FSSDataBaseAdapter(PublicDatasetAdapter):
         arr = self.read_raw(path)
         rows = arr[np.isclose(arr[:, 0], self.angle, atol=1e-6)]
         if not len(rows):
-            raise ValueError(f"no rows at {self.angle} deg (angles present: {sorted(set(np.round(arr[:, 0], 6)))})")
+            raise _NoAngle(f"no rows at {self.angle} deg (angles present: {sorted(set(np.round(arr[:, 0], 6)))})")
         rows = rows[np.argsort(rows[:, 1])]
         mag = 10.0 ** (rows[:, 2:6] / 20.0)
         S = mag * np.exp(1j * np.radians(rows[:, 6:10]))
@@ -142,7 +155,10 @@ class FSSDataBaseAdapter(PublicDatasetAdapter):
         p = d / "data.json"
         if not p.exists():
             return {}
-        js = json.loads(p.read_text(encoding="utf-8"), parse_float=Decimal)  # keeps float-looking ids exact
+        try:
+            js = json.loads(p.read_text(encoding="utf-8"), parse_float=Decimal)  # keeps float-looking ids exact
+        except ValueError as exc:  # metadata is optional for the prior; keep the sample, note the problem
+            return {"meta_error": f"data.json: {exc}"}
         out: Dict[str, object] = {}
         unit = js.get("unit")
         if isinstance(unit, list) and len(unit) >= 2:
@@ -176,6 +192,9 @@ class FSSDataBaseAdapter(PublicDatasetAdapter):
                     if self.nan_policy == "drop_sample":
                         self.skipped_nan.append(str(r["id"]))
                         continue
+                if self.drop_active and np.nanmax(20 * np.log10(np.abs(S) + 1e-300)) > self.active_tol_db:
+                    self.skipped_active.append(str(r["id"]))
+                    continue
                 if freq is None:
                     freq = f
                 elif len(f) != len(freq) or not np.allclose(f, freq, rtol=1e-9, atol=1.0):
@@ -186,12 +205,15 @@ class FSSDataBaseAdapter(PublicDatasetAdapter):
                 meta = {"id": str(r["id"]), "n_layers": int(len(m)), "db_size": r["size"], "db_height_mm": r["height"]}
                 meta.update(self.read_meta(d))
                 masks.append(pad); resps.append(S); metas.append(meta)
+            except _NoAngle:
+                self.skipped_angle.append(str(r["id"]))
             except Exception as exc:
                 self.failures.append({"id": str(r["id"]), "error": f"{type(exc).__name__}: {exc}"})
         if not masks:
             raise RuntimeError(f"No FSSDataBase samples parsed under {self.root}; failures: {self.failures[:3]}")
-        log.info("FSSDataBase: %d samples loaded, %d skipped for NaN at %g deg, %d unavailable/failed",
-                 len(masks), len(self.skipped_nan), self.angle, len(self.failures))
+        log.info("FSSDataBase: %d samples loaded at %g deg; skipped %d NaN, %d |S|>%g dB, %d without this angle; %d failed",
+                 len(masks), self.angle, len(self.skipped_nan), len(self.skipped_active), self.active_tol_db,
+                 len(self.skipped_angle), len(self.failures))
         return MaskSample(np.stack(masks), freq, np.stack(resps),
                           f"S_complex[{','.join(CHANNELS)}] at theta={self.angle:g} deg (HFSS, generic FSS cells)", metas)
 
@@ -217,4 +239,5 @@ class FSSDataBaseAdapter(PublicDatasetAdapter):
             "not_used_for": "target-domain training or evaluation",
             "verified_against_files": "format checked against a partial local copy (614/5607 samples + full DataBase.db)",
             "parse_failures": len(self.failures), "skipped_for_nan": len(self.skipped_nan),
+            "skipped_nonpassive": len(self.skipped_active), "skipped_angle_absent": len(self.skipped_angle),
         }
