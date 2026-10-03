@@ -101,7 +101,14 @@ def _write_json(path, obj):
     tmp = path + ".tmp"
     with open(tmp, "w") as f:
         json.dump(obj, f, indent=2, default=str)
-    os.replace(tmp, path)
+    for i in range(50):  # Windows refuses to replace a file another process has open (the worker polls progress.json)
+        try:
+            os.replace(tmp, path)
+            return
+        except PermissionError:
+            time.sleep(0.02)
+    os.remove(tmp)
+    raise PermissionError("could not replace %s (file kept open by another process)" % path)
 
 
 def _load(job_dir, name):
@@ -148,7 +155,10 @@ def run(job_dir, out_dir, pyaedt_module=None, non_graphical=True, cores=4, keep_
         print(line)
 
     def progress(state):
-        _write_json(os.path.join(out_dir, "progress.json"), {"state": state, "time": time.time()})
+        try:  # best effort: a progress update must never fail the job
+            _write_json(os.path.join(out_dir, "progress.json"), {"state": state, "time": time.time()})
+        except OSError:
+            pass
 
     rec = Recorder(log)
     job = _load(job_dir, "job.json")

@@ -57,7 +57,7 @@ def write_job_package(root: Path, *, job_id: str, candidate_id: str, parent_desi
     write_json_atomic(d / "parameters.json", {"parameters": [dict(p) for p in parameters]})
     write_json_atomic(d / "simulation_config.json", dict(simulation_config))
     write_json_atomic(d / "template.json", dict(template))
-    (d / "run_hfss.py").write_text(build_run_hfss_script(), encoding="utf-8")
+    (d / "run_hfss.py").write_bytes(build_run_hfss_script().encode("utf-8"))  # exact bytes: text mode would write CRLF on Windows and break the trusted hash
     if geometry is not None:
         write_json_atomic(d / "geometry" / "geometry.json", dict(geometry))
     if stl_path is not None:

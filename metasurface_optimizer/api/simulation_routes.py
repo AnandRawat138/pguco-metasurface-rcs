@@ -129,7 +129,7 @@ def register(app, get_session, J, workspace: Path) -> None:
             raise HTTPException(404, "not found")
         if p.suffix != ".zip" or not p.is_file():
             raise HTTPException(404, "not found")
-        return FileResponse(p, filename=p.name)
+        return FileResponse(p, filename=p.name, media_type="application/zip")
 
     @app.post("/api/sim/templates/{tid}/import_verification")
     async def sim_import_verification(tid: str, results_zip: UploadFile = File(...)):
@@ -311,7 +311,7 @@ def register(app, get_session, J, workspace: Path) -> None:
         d = Path(job.job_dir if what == "package" else (job.result_dir or ""))
         if not d.is_dir():
             raise HTTPException(404, "no result yet" if what != "package" else "package missing")
-        return FileResponse(_zip_dir(d), filename=f"{job_id}_{what}.zip")
+        return FileResponse(_zip_dir(d), filename=f"{job_id}_{what}.zip", media_type="application/zip")
 
     @app.get("/api/sessions/{sid}/sim/jobs/{job_id}/logs", response_class=PlainTextResponse)
     def sim_logs(sid: str, job_id: str):
@@ -336,7 +336,7 @@ def register(app, get_session, J, workspace: Path) -> None:
         z = Path(tr.root) / f"{batch_id}.zip" if hasattr(tr, "root") else None
         if z is None or not z.is_file():
             raise HTTPException(404, "no such batch archive")
-        return FileResponse(z, filename=z.name)
+        return FileResponse(z, filename=z.name, media_type="application/zip")
 
     @app.post("/api/sessions/{sid}/sim/export")
     def sim_export(sid: str):
