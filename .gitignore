@@ -10,3 +10,4 @@ outputs_run.log
 workspace/
 .venv/
 *.egg-info/
+hfss_jobs/

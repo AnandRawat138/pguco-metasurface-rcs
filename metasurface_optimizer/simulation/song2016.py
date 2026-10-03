@@ -132,6 +132,9 @@ def make_batches(layout_dir: Path, out: Path, template_dir: str, f_cell=(6e9, 13
     asc = make_simulation_config(at, *f_array, polarizations=("TE",), theta_deg=theta_array, outputs=["rcs"])
     aa = HFSSAdapter(at, s, asc, out / "work" / "array", ManualBatchTransport(out / "array"), "HFSS", study="s16arr")
     layouts = sorted(Path(layout_dir).glob("*.csv"))
+    (out / "layouts").mkdir(exist_ok=True)
+    for p in layouts:  # the array builder on the HFSS PC reads one of these
+        (out / "layouts" / p.name).write_bytes(p.read_bytes())
     base = next((p for p in layouts if p.stem == "baseline_paper"), layouts[0])
     (regdir / "song2016_array.json").write_text(json.dumps(_registration(at, aa.parameters_for(read_layout(base).ravel()), asc), indent=1))
     jobs = []
