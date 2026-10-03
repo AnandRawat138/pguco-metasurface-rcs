@@ -1,0 +1,33 @@
+{
+  "template_id": "checkerboard_rcs_example",
+  "name": "Checkerboard RCS (EXAMPLE registration - edit every name to match your .aedt)",
+  "simulation_type": "finite_rcs",
+  "aedt_project": "D:/hfss_templates/checkerboard_rcs.aedt",
+  "design": "HFSSDesign1",
+  "solution_type": "Modal",
+  "setup": "Setup1",
+  "sweep": "Sweep1",
+  "parameter_mapping": {
+    "period": {"variable": "p", "unit": "mm"},
+    "length_a": {"variable": "La", "unit": "mm"},
+    "width_a": {"variable": "Wa", "unit": "mm"},
+    "length_b": {"variable": "Lb", "unit": "mm"},
+    "width_b": {"variable": "Wb", "unit": "mm"},
+    "rotation": {"variable": "rot", "unit": "deg"},
+    "substrate_thickness": {"variable": "h", "unit": "mm"},
+    "eps_r": {"variable": "er", "unit": ""}
+  },
+  "excitation": {
+    "names": ["IncPWave1"],
+    "angle_variables": {"theta": "theta_inc"},
+    "polarization": {"mode": "variable", "variable": "pol_angle", "values": {"TE": "0deg", "TM": "90deg"}}
+  },
+  "boundaries": ["Rad1"],
+  "materials": ["FR4_epoxy"],
+  "outputs": {
+    "rcs": {"report_category": "Monostatic RCS", "context": "", "quantity": "m2",
+            "expressions": {"TE": "MonostaticRCSTotal", "TM": "MonostaticRCSTotal"}}
+  },
+  "rcs_reference": {"kind": "pec_plate", "area_m2": 0.0576},
+  "notes": "EXAMPLE ONLY. Names, expressions and the report category must match your project; the 12-step verification checks them."
+}

@@ -1,0 +1,31 @@
+{
+  "template_id": "fss_unit_cell_example",
+  "name": "FSS unit cell, Floquet ports (EXAMPLE registration - edit every name to match your .aedt)",
+  "simulation_type": "periodic_fss",
+  "aedt_project": "D:/hfss_templates/fss_unit_cell.aedt",
+  "design": "HFSSDesign1",
+  "solution_type": "Modal",
+  "setup": "Setup1",
+  "sweep": "Sweep1",
+  "parameter_mapping": {
+    "period": {"variable": "p", "unit": "mm"},
+    "length_a": {"variable": "L", "unit": "mm"},
+    "width_a": {"variable": "W", "unit": "mm"}
+  },
+  "excitation": {
+    "names": ["FloquetPort1", "FloquetPort2"],
+    "angle_variables": {"theta": "scan_theta", "phi": "scan_phi"},
+    "polarization": {"mode": "floquet_modes"}
+  },
+  "boundaries": ["Master1", "Slave1", "Master2", "Slave2"],
+  "materials": ["Rogers RO4003 (tm)"],
+  "outputs": {
+    "sparameters": {
+      "S11_TE": "S(FloquetPort1:1,FloquetPort1:1)",
+      "S21_TE": "S(FloquetPort2:1,FloquetPort1:1)",
+      "S11_TM": "S(FloquetPort1:2,FloquetPort1:2)",
+      "S21_TM": "S(FloquetPort2:2,FloquetPort1:2)"
+    }
+  },
+  "notes": "EXAMPLE ONLY. Which Floquet mode index is TE and which is TM depends on how the ports were defined; check the mode table in HFSS."
+}

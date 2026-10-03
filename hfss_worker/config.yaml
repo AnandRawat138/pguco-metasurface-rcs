@@ -1,0 +1,20 @@
+# HFSS worker configuration (PC-2). Flat "key: value" lines; lists in [a, b] form.
+# Python that has PyAEDT installed and can start AEDT 2024 R2 (e.g. the venv you use for PyAEDT).
+python_executable: ""            # empty = the Python running worker.py
+aedt_version: "2024.2"
+non_graphical: true
+cores: 4
+max_runtime_minutes: 120        # per attempt; exceeded -> TIMEOUT, AEDT process tree killed
+max_retries: 2                  # FAILED / TIMEOUT attempts are retried; FAILED_VALIDATION is not
+poll_interval_s: 10             # shared-folder mode: how often to look for new jobs
+progress_poll_s: 2
+keep_project: false             # keep the solved .aedt copy next to each result (large)
+plots: true
+# Security
+job_key_file: ""                # shared HMAC key file; when set, unsigned or edited jobs are refused
+require_signature: false
+allowed_template_roots: []      # e.g. ["D:/hfss_templates"]; template projects outside are refused
+# A candidate job runs only after its template passed the 12-step validation suite on this PC.
+require_validation_suite: true
+validation_record: worker_state/validation_suite.json
+worker_id: ""                   # empty = computer name

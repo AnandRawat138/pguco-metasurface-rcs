@@ -38,6 +38,14 @@ class Fidelity(str, Enum):
     NOT a full-wave solver and must never be reported as HFSS/CST output.
     """
 
+    MOCK = "MOCK_SOLVER"
+    """Output of the mock solver that tests the HFSS job pipeline without HFSS.
+
+    Software test only. It is not physics and must never appear in a
+    scientific result; the simulation manager refuses to mix it with any
+    other fidelity.
+    """
+
     @property
     def is_prediction(self) -> bool:
         return self is Fidelity.PREDICTED
@@ -45,7 +53,12 @@ class Fidelity(str, Enum):
     @property
     def counts_as_high_fidelity(self) -> bool:
         """Whether an evaluation consumes the high-fidelity budget N_HF."""
-        return self in (Fidelity.SIMULATED_HF, Fidelity.MEASURED, Fidelity.SYNTHETIC_ORACLE)
+        return self in (Fidelity.SIMULATED_HF, Fidelity.MEASURED, Fidelity.SYNTHETIC_ORACLE, Fidelity.MOCK)
+
+    @property
+    def is_physical(self) -> bool:
+        """True for data that describes real electromagnetics (full-wave, measured, reported)."""
+        return self in (Fidelity.SIMULATED_HF, Fidelity.MEASURED, Fidelity.REPORTED, Fidelity.PLOT_DIGITIZED)
 
     @property
     def display(self) -> str:
@@ -56,6 +69,7 @@ class Fidelity(str, Enum):
             Fidelity.REPORTED: "REPORTED",
             Fidelity.PLOT_DIGITIZED: "REPORTED (plot-digitized, approximate)",
             Fidelity.SYNTHETIC_ORACLE: "SYNTHETIC ORACLE (analytic model, not full-wave)",
+            Fidelity.MOCK: "MOCK (software test only, not physics)",
         }[self]
 
 

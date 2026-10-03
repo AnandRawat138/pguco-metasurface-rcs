@@ -245,7 +245,7 @@ def write_artifacts(builder: ExperimentBuilder, opt: CounterfactualOptimizer, re
     recs = opt.hf_records()
     base_rec = recs[0]
     best_rec = next(r for r in recs if r.record_id == res["best_validated"]["record_id"])
-    synthetic = best_rec.fidelity is Fidelity.SYNTHETIC_ORACLE
+    synthetic = best_rec.fidelity in (Fidelity.SYNTHETIC_ORACLE, Fidelity.MOCK)
 
     # ---- parameters
     def param_doc(rec, role):

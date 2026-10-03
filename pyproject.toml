@@ -17,7 +17,7 @@ dependencies = [
 dev = ["pytest>=7", "httpx"]
 
 [tool.setuptools.packages.find]
-include = ["metasurface_optimizer*"]
+include = ["metasurface_optimizer*", "hfss_worker*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

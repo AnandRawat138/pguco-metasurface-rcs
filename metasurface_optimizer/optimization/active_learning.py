@@ -152,8 +152,10 @@ class CounterfactualOptimizer:
 
     def finish_initial_design(self) -> None:
         """After the initial local design is observed: HF sensitivities, frozen normaliser, incumbent."""
-        self.compute_hf_sensitivity()
+        self.init_done = True
+        # the normaliser must be frozen before the sensitivity scalarises J (min-max / z-score have no stats before this)
         self.problem.fit_normalizer(np.vstack([r.J for r in self.hf_records()]))
+        self.compute_hf_sensitivity()
         self.best_composite_hist = [self.composite_of(self.problem.J0, self.problem.x0),
                                     min(self.composite_of(r.J, r.x) for r in self.hf_records())]
         best = self.best_record()
@@ -448,6 +450,59 @@ class CounterfactualOptimizer:
         F = self.problem.normalized(np.vstack([r.J for r in recs]))
         ref = self.problem.normalized(self.problem.J0[None])[0] + self.cfg.hv_margin
         return hypervolume(F, ref)
+
+    # ================================================================ job-based interface (simulation manager)
+    @property
+    def phase(self) -> str:
+        """baseline -> initial -> iterate: what the next batch of high-fidelity jobs is for."""
+        if not any(r.tag == "baseline" for r in self.dataset.records):
+            return "baseline"
+        if not getattr(self, "init_done", False):
+            return "initial"
+        return "iterate"
+
+    def generate_candidates(self, k: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Designs to simulate next. Baseline and initial-design points carry no prediction; iterate-phase
+        candidates are PGUCO proposals (PREDICTED values attached)."""
+        ph = self.phase
+        if ph == "baseline":
+            return [{"x": self.problem.x0.copy(), "values": self.schema.to_dict_values(self.problem.x0), "kind": "baseline", "tag": "baseline"}]
+        if ph == "initial":
+            plan = [{"x": d["x"], "values": self.schema.to_dict_values(d["x"]), "kind": "initial", "tag": d["tag"]} for d in self.initial_design()]
+            if k is not None and k < len(plan):
+                log.warning("initial design truncated from %d to %d points by the simulation budget", len(plan), k)
+                plan = plan[:k]
+            return plan
+        return [{**p, "tag": f"iter{self.iteration}_{p['kind']}"} for p in self.propose(k)]
+
+    def update(self, results: List[Dict[str, Any]]) -> Optional[str]:
+        """Feed back one batch of simulation results: [{x, response (EMResponse or None if failed), tag, state}].
+
+        Failed simulations are not physical results: they are logged in ``failed_evaluations`` and excluded.
+        MOCK results can never be mixed with any other fidelity."""
+        ok = [r for r in results if r.get("response") is not None]
+        failed = [r for r in results if r.get("response") is None]
+        self.failed_evaluations = getattr(self, "failed_evaluations", []) + [
+            {"iteration": self.iteration, "tag": r.get("tag"), "state": r.get("state"), "error": r.get("error", ""),
+             "values": self.schema.to_dict_values(np.asarray(r["x"], float))} for r in failed]
+        have = {r.fidelity for r in self.dataset.records if r.response is not None}
+        new = {r["response"].fidelity for r in ok}
+        if (Fidelity.MOCK in have | new) and len(have | new) > 1:
+            raise ValueError("MOCK results cannot be mixed with other fidelities in one study")
+        ph = self.phase
+        if ph == "baseline":
+            if not ok:
+                raise RuntimeError("the baseline simulation failed; fix the template/job before optimizing")
+            self.set_baseline(ok[0]["response"], counted=True)
+            return None
+        for r in ok:
+            self.observe(np.asarray(r["x"], float), r["response"], r.get("tag", ""), {"job_id": r.get("job_id")})
+        if ph == "initial":
+            if not ok:
+                raise RuntimeError("every initial-design simulation failed; nothing to learn from")
+            self.finish_initial_design()
+            return None
+        return self.update_after_batch()
 
     # ================================================================ drivers
     def run(self, evaluator: BudgetedEvaluator, baseline_response: Optional[EMResponse] = None) -> Dict[str, Any]:

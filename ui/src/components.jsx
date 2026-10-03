@@ -61,11 +61,13 @@ const FID = {
   REPORTED: ["REPORTED", "text-warn border-warn"],
   REPORTED_PLOT_DIGITIZED: ["REPORTED (plot-digitized)", "text-warn border-warn"],
   SYNTHETIC_ANALYTIC_ORACLE: ["SYNTHETIC ORACLE (not full-wave)", "text-warn border-warn"],
+  MOCK_SOLVER: ["MOCK (software test, not physics)", "text-bad border-bad"],
 };
 
 export function Badge({ fidelity, children }) {
   const f = String(fidelity || "").toUpperCase();
-  const key = f.includes("SYNTHETIC") ? "SYNTHETIC_ANALYTIC_ORACLE"
+  const key = f.includes("MOCK") ? "MOCK_SOLVER"
+    : f.includes("SYNTHETIC") ? "SYNTHETIC_ANALYTIC_ORACLE"
     : f.includes("PREDICTED") ? "PREDICTED"
     : f.includes("PLOT") ? "REPORTED_PLOT_DIGITIZED"
     : f.includes("REPORTED") ? "REPORTED"
