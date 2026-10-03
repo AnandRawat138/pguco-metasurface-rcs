@@ -198,8 +198,24 @@ grid is compatible), and optionally fine-tuned on the target's own cell spectra.
 the cells listed in `schema.metadata.cells` are evaluated at $K$ band frequencies and appended to
 $\boldsymbol\phi$ as $\mathbf{p}(\mathbf{x})=[\cos\Delta\varphi_{AB}(f_k),\sin\Delta\varphi_{AB}(f_k)]_k\cup\{\overline{|\Gamma_c|}\}$. Without prior data the block is absent.
 The FSSDataBase adapter (`fssdatabase.py`) parses the published layout (per-sample mask and result
-CSVs) for mask-based representation learning; it was written from the dataset card and could not be
-verified against the files from the build environment.
+CSVs) and was run on the complete local copy (5,607 samples; 0 deg: 5,604 load, 3 NaN).
+
+**Mask prior (`models/mask_prior.py`, `transfer.prior: fssdatabase_mask_prior`).** The 0-deg
+FSSDataBase samples are cached with their 500 x 500 masks block-averaged to 50 x 50 (exact 10 x 10
+blocks, metal if the block fraction is at least 0.5) and split by sample id into train/val/test
+(80/10/10, seeded). A CNN with circular padding (periodic cell) on the three layer masks plus
+(total thickness, layer count, wire width) predicts Re/Im of S11/S21 (TE, TM) at the 101 points of
+10-20 GHz, trained with random joint lateral shifts of the layers and the loss
+$\mathcal L=\overline{(h-y)^2}+\lambda_p\sum_{p}\overline{\max(0,|S_{11,p}|^2+|S_{21,p}|^2-1)^2}$ (Eq. M1, $\lambda_p=1$).
+The epoch is selected on the validation split; the test split is used once for the reported
+metrics, against a training-mean spectrum and a nearest-neighbour-by-fill-factor baseline. For a
+target design every cell in `schema.metadata.cells` is drawn as a centred rectangle on the 10 mm
+grid (`rasterize_geometry`) and queried with electrical-size scaling $f'=fP/10\,\mathrm{mm}$,
+$h'=h\cdot10\,\mathrm{mm}/P$, clamped to 10-20 GHz and 1-2 mm (the clamped fraction is reported).
+The features have the same form as the cell prior's ($\cos/\sin\Delta\varphi_{AB}(f_k)$, mean $|S|$
+per cell; or the penultimate embedding with `features: embedding`). FSSDataBase cells are
+free-standing FSS layers on one substrate (eps_r 3.48) and one period, while the demo target is a
+ground-backed reflector, so this is a generic geometry representation, not a physics transfer.
 
 ## 8. Uncertainty estimation
 

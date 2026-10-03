@@ -106,7 +106,7 @@ configs/ docs/ examples/ tests/
 
 ## Status
 
-**Complete and tested** (54 tests): parameter schema and geometry generation; geometry validation;
+**Complete and tested** (65 tests): parameter schema and geometry generation; geometry validation;
 STL export (per-layer watertight) and STL inspection; S-parameter/RCS I/O; objectives O1–O9 with
 three normalizations; physics losses; seven surrogate families plus the heterogeneous ensemble;
 local sensitivity (central difference, or a local linear fit after an LHS start); counterfactual
@@ -116,11 +116,13 @@ FastAPI backend; the 13-tab dashboard (driven end to end in a browser); PDF valu
 plot digitizing and reconstruction confidence.
 
 **Partial**
-- Transfer learning uses a synthetic cell prior. The FSSDataBase adapter now follows the real on-disk
-  format (checked against a partial local copy: full `DataBase.db`, 614 of 5,607 sample folders; run on
-  20 real samples) and
-  loads multi-layer masks with complex S11/S21 (TE/TM). A mask-based prior model that consumes it is
-  not built yet.
+- Transfer learning: a synthetic cell prior, and a mask prior trained on real FSSDataBase HFSS data
+  (`transfer.prior: fssdatabase_mask_prior`, `examples/04_fssdatabase_mask_prior.py`). The adapter runs
+  on all 5,607 samples. On the held-out test split (561 cells) the prior's |S| error is 2.9-3.5 dB MAE per
+  channel versus 3.7-5.1 dB for a training-mean spectrum and 3.2-5.5 dB for a fill-factor nearest
+  neighbour. As a feature source for the synthetic checkerboard demo it did not improve the
+  optimisation over 3 seeds (generic FSS geometry representation, not a physics match to a
+  ground-backed reflector; 40 % of the demo band falls outside the prior's scaled 10-20 GHz range).
 - Image/STL-to-parameter inference handles rectangle-like features only and always asks for verification.
 - PDF extraction is regex-based (no OCR); vector-drawn plots are rendered per page for digitizing.
 - Ablations cover A2, A3, A5, A7, A9, A10 and A11 (surrogate swaps); the remaining A-items are
