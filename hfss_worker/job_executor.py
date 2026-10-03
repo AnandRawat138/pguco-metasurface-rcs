@@ -84,6 +84,9 @@ def execute_job(job_dir: Path, cfg: Mapping[str, Any], mode: str, worker_id: str
                 msg = (read_json(rd / "result.json").get("error") or "")[:2000]
             except Exception:
                 msg = ""
+        if state == "COMPLETED" and read_status(job_dir).get("state") == JobState.SOLVING.value:
+            # the runner's last EXTRACTING update fell between two progress polls; record it so SOLVING -> COMPLETED stays legal
+            set_state(job_dir, JobState.EXTRACTING, note="extraction finished between progress polls")
         set_state(job_dir, JobState(state), note=msg, result_dir=rd.name, force=state == "CANCELLED")
         log(f"{job['job_id']}: attempt {attempts} -> {state}{(' - ' + msg.splitlines()[0]) if msg else ''}")
         if state in ("FAILED", "TIMEOUT") and attempts <= max_retries:
