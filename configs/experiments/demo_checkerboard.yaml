@@ -1,0 +1,56 @@
+# End-to-end DEMO on SYNTHETIC data. The "high-fidelity" source is the analytic
+# oracle (not HFSS/CST); every result it produces is labeled SYNTHETIC_ANALYTIC_ORACLE.
+name: demo_checkerboard_synthetic
+version: "1.0"
+seed: 0
+schema: configs/schemas/checkerboard_demo.yaml
+baseline:
+  values: null            # null = schema defaults (the existing design x0)
+  response: oracle        # oracle | file
+  geometry_confidence: HIGH
+high_fidelity:
+  kind: synthetic_oracle  # synthetic_oracle | manual_upload
+  budget: 36              # N_max (includes the baseline evaluation when response=oracle)
+  conditions:
+    f_start: 6.0e9
+    f_stop: 14.0e9
+    n_freq: 41
+    theta_inc: [0.0, 20.0, 40.0]
+    polarizations: [TE, TM]
+    tile_cells: 4
+    n_tiles: 6
+objectives:
+  - {name: specular, kind: specular_rcs, band: [8.0e9, 12.0e9], incidence: [0.0], scale: reduction_db, weight: 1.0}
+  - {name: angular, kind: angular_robustness, band: [8.0e9, 12.0e9], scale: reduction_db, aggregate: mean, weight: 1.0}
+  - {name: polarization, kind: polarization_robustness, band: [8.0e9, 12.0e9], scale: reduction_db, aggregate: max, weight: 1.0}
+  - {name: diffusion, kind: angular_entropy, band: [8.0e9, 12.0e9], incidence: [0.0], weight: 0.5}
+  - {name: bandwidth, kind: reduction_bandwidth, band: [8.0e9, 12.0e9], incidence: [0.0], threshold_db: -10.0, weight: 0.5, norm_floor: 0.1}
+normalization: baseline_relative
+lambda_c: 10.0
+physics:
+  passive: true
+  reciprocal: false        # reflection-only data: reciprocity has nothing to act on
+  use_passivity: true
+  use_reciprocity: true
+  use_smoothness: true
+  use_geometry: true
+optimizer:
+  surrogate: physics_ensemble
+  batch_size: 4
+  init_strategy: lhs       # oat = 2d one-at-a-time HF runs (HF sensitivities), lhs = n_init_lhs points in the trust region
+  n_init_lhs: 8
+  trust_region: {init_radius: 0.06, max_radius: 0.3}
+  objective_mode: composite
+  acquisition: {kind: ei_sigma_diversity, beta: 0.0, gamma: 0.05, kappa: 1.0}
+  stopping: {rules: [budget, objective, hypervolume], objective_window: 4, objective_eps: 1.0e-4, hv_eps: 1.0e-6, hv_patience: 4}
+transfer:
+  enabled: false
+  prior: synthetic_cell_prior
+# Defaults above were selected on this synthetic problem with tuning seeds {0, 1};
+# reported benchmark/ablation statistics use disjoint seeds.
+benchmark:
+  seeds: [10, 11, 12, 13, 14]
+  baselines: [random_perturbation, local_search, pso, differential_evolution, bayesian_optimization, nsga2, surrogate_no_physics]
+ablation:
+  seeds: [10, 11, 12]
+output_dir: outputs

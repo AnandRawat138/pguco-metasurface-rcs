@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+outputs/
+scratch/
+ui/node_modules/
+ui/dist/
+*.sqlite
+outputs_run.log
+workspace/
+.venv/
+*.egg-info/

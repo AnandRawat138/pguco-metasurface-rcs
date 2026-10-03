@@ -1,0 +1,37 @@
+# Parameter schema for the SYNTHETIC demo design: a two-state checkerboard
+# RCS-reduction metasurface. Edit freely: bounds, steps, fixed flags, units.
+name: checkerboard_rect_patch_demo
+version: "1.0"
+template: checkerboard_rect_patch
+length_unit: mm
+manufacturing:
+  min_gap: 0.2            # mm, minimum metal-to-metal spacing
+  min_feature: 0.2        # mm, minimum metal width
+  max_substrate_thickness: 5.0
+  metal_thickness: 0.035
+parameters:
+  - {name: period, type: continuous, min: 6.0, max: 12.0, unit: mm, default: 10.0, step: 0.3, resolution: 0.01, role: period}
+  - {name: length_a, type: continuous, min: 1.0, max: 11.5, unit: mm, default: 8.5, step: 0.3, resolution: 0.01, role: length}
+  - {name: width_a, type: continuous, min: 1.0, max: 11.5, unit: mm, default: 8.5, step: 0.3, resolution: 0.01, role: width}
+  - {name: length_b, type: continuous, min: 1.0, max: 11.5, unit: mm, default: 5.0, step: 0.3, resolution: 0.01, role: length}
+  - {name: width_b, type: continuous, min: 1.0, max: 11.5, unit: mm, default: 5.0, step: 0.3, resolution: 0.01, role: width}
+  - {name: rotation, type: continuous, min: -45.0, max: 45.0, unit: degree, default: 0.0, step: 3.0, resolution: 0.1, role: rotation}
+  - {name: substrate_thickness, type: continuous, min: 0.5, max: 5.0, unit: mm, default: 3.0, step: 0.15, resolution: 0.01, role: thickness}
+  - {name: eps_r, type: continuous, min: 2.2, max: 10.2, unit: "1", default: 4.4, step: 0.2, role: permittivity}
+  - {name: tan_delta, type: continuous, min: 0.0005, max: 0.03, unit: "1", default: 0.02, fixed: true, role: loss_tangent}
+correlated_directions:
+  - name: scale_both_states
+    description: Scale both patch states together (shifts both resonances while roughly keeping their phase difference)
+    direction: {length_a: 1.0, width_a: 1.0, length_b: 1.0, width_b: 1.0}
+  - name: period_with_patches
+    description: Grow the period and patch A together (keeps the A gap approximately constant)
+    direction: {period: 1.0, length_a: 1.0, width_a: 1.0}
+  - name: state_contrast
+    description: Increase the A/B size contrast (widens the reflection-phase difference)
+    direction: {length_a: 1.0, width_a: 1.0, length_b: -1.0, width_b: -1.0}
+metadata:
+  description: SYNTHETIC demonstration design (not from a real device)
+  # cell-level mapping used by the transfer-learning prior (one entry per unit-cell state)
+  cells:
+    - {period: period, length: length_a, width: width_a, substrate_thickness: substrate_thickness, eps_r: eps_r, tan_delta: tan_delta, rotation: rotation}
+    - {period: period, length: length_b, width: width_b, substrate_thickness: substrate_thickness, eps_r: eps_r, tan_delta: tan_delta, rotation: rotation}
