@@ -140,15 +140,22 @@ class ExperimentBuilder:
         from metasurface_optimizer.models.transfer import CellPriorModel, PriorFeatureMap
 
         key = json.dumps(t, sort_keys=True)
+        band = next(o["band"] for o in self.cfg["objectives"] if o.get("band"))
+        if t.get("prior") == "fssdatabase_mask_prior":
+            from metasurface_optimizer.models.mask_prior import MaskPriorFeatureMap, load_or_train
+
+            if key not in _PRIOR_CACHE:
+                _PRIOR_CACHE[key] = load_or_train(t, self.root)
+            return MaskPriorFeatureMap(_PRIOR_CACHE[key], self.schema, (float(band[0]), float(band[1])), int(t.get("n_freq", 5)),
+                                       mode=str(t.get("features", "spectrum")))
         if key not in _PRIOR_CACHE:
             if t.get("prior", "synthetic_cell_prior") == "synthetic_cell_prior":
                 from metasurface_optimizer.data.public_datasets.synthetic_prior import SyntheticCellPrior
 
                 data = SyntheticCellPrior(n_cells=int(t.get("n_cells", 600)), seed=int(t.get("seed", 123))).load()
             else:
-                raise ValueError("Only parameterised cell priors can feed the cell prior model; mask datasets (FSSDataBase) need the mask encoder path")
+                raise ValueError(f"Unknown transfer.prior {t.get('prior')!r}; use synthetic_cell_prior or fssdatabase_mask_prior")
             _PRIOR_CACHE[key] = CellPriorModel(seed=int(t.get("seed", 123))).pretrain(data, epochs=int(t.get("epochs", 60)))
-        band = next(o["band"] for o in self.cfg["objectives"] if o.get("band"))
         return PriorFeatureMap(_PRIOR_CACHE[key], self.schema, (float(band[0]), float(band[1])), int(t.get("n_freq", 5)))
 
     def budget(self) -> int:
