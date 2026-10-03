@@ -1,0 +1,52 @@
+# Optimisation of the Song et al. (2016) metasurface on an APPROXIMATE model:
+# Fig.-2-calibrated ring+disc circuit + physical optics (not HFSS). Results are labelled SYNTHETIC_ORACLE.
+# Validate the selected designs with the HFSS job batches in hfss_jobs/song2016/.
+name: song2016_rcs_model
+version: "1.0"
+seed: 0
+schema: configs/schemas/song2016_ring_disc_array.yaml
+baseline:
+  values: null
+  response: oracle
+  geometry_confidence: MEDIUM   # radii ratios and FR4 from the text; R1-phase curve read from Fig. 2
+high_fidelity:
+  kind: ring_disc_array_model
+  budget: 36
+  bistatic: true
+  conditions:
+    f_start: 6.0e9
+    f_stop: 13.0e9
+    n_freq: 71
+    theta_inc: [0.0, 15.0, 30.0]
+    polarizations: [TE, TM]
+    n_cells: 30
+    layout_seed: 1
+objectives:
+  - {name: worst_case, kind: peak_rcs, band: [7.0e9, 12.0e9], incidence: [0.0], rcs_kind: monostatic, scale: reduction_db, aggregate: max, weight: 1.0}
+  - {name: mean_reduction, kind: broadband_rcs, band: [7.0e9, 12.0e9], incidence: [0.0], rcs_kind: monostatic, scale: reduction_db, aggregate: max, weight: 0.5}
+  - {name: angular, kind: angular_robustness, band: [7.0e9, 12.0e9], incidence: [0.0, 15.0, 30.0], rcs_kind: specular, scale: reduction_db, aggregate: max, weight: 0.5}
+  - {name: bandwidth, kind: reduction_bandwidth, band: [6.0e9, 13.0e9], incidence: [0.0], threshold_db: -10.0, aggregate: max, weight: 0.5, norm_floor: 0.1}
+normalization: baseline_relative
+lambda_c: 10.0
+physics:
+  passive: true
+  reciprocal: false
+  use_passivity: true
+  use_reciprocity: true
+  use_smoothness: true
+  use_geometry: true
+optimizer:
+  surrogate: physics_ensemble
+  batch_size: 4
+  init_strategy: lhs
+  n_init_lhs: 8
+  trust_region: {init_radius: 0.08, max_radius: 0.35}
+  objective_mode: composite
+  acquisition: {kind: ei_sigma_diversity, beta: 0.0, gamma: 0.05, kappa: 1.0}
+  stopping: {rules: [budget, objective, hypervolume], objective_window: 4, objective_eps: 1.0e-4, hv_eps: 1.0e-6, hv_patience: 4}
+transfer:
+  enabled: false
+benchmark:
+  seeds: [10, 11, 12]
+  baselines: [random_perturbation, local_search, differential_evolution, bayesian_optimization]
+output_dir: outputs

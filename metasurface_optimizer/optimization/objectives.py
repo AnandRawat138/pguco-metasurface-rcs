@@ -13,6 +13,7 @@ Implemented kinds (equation numbers refer to docs/methodology.md):
 ``angular_entropy``       (Eq. O5)  J_diff  = -mean_f H_ang(f)
 ``total_scattered``       (Eq. O6)  mean over band of (1/4pi) int sigma dOmega
 ``reduction_bandwidth``   (Eq. O7)  J_bw    = -FBW{ f : 10log10(sigma_spec/sigma_ref) <= threshold }
+``peak_rcs``              (Eq. O10) J_peak  = max_f s(sigma(f)) per (pol, inc), aggregated  (worst frequency)
 ``sparam_level``          (Eq. O8)  mean_f |S_ij(f)|_dB (sense='max' negates)
 ``manufacturing_margin``  (Eq. O9)  J_mfg   = max_i g_i(x)  (geometry constraint closest to violation)
 
@@ -161,6 +162,14 @@ def _total(resp: EMResponse, spec: ObjectiveSpec, x, ctx) -> float:
     return _agg(vals, None, spec.aggregate)
 
 
+def _peak(resp: EMResponse, spec: ObjectiveSpec, x, ctx) -> float:
+    """Worst frequency in the band: max_f s(sigma(f)) per (pol, inc), then aggregated (e.g. the '> 10 dB reduction everywhere' criterion)."""
+    rcs = resp.rcs
+    s = _scaled(rcs, spec, spec.rcs_kind)
+    m = band_mask(rcs.frequency, spec.band)
+    return _agg([float(s[p, i, m].max()) for p in _pol_idx(rcs, spec) for i in _inc_idx(rcs, spec)], None, spec.aggregate)
+
+
 def _reduction_bw(resp: EMResponse, spec: ObjectiveSpec, x, ctx) -> float:
     rcs = resp.rcs
     red = to_dbsm(rcs.specular()) - to_dbsm(rcs.reference)
@@ -196,6 +205,7 @@ OBJECTIVE_KINDS: Dict[str, Callable[..., float]] = {
     "angular_entropy": _entropy,
     "total_scattered": _total,
     "reduction_bandwidth": _reduction_bw,
+    "peak_rcs": _peak,
     "sparam_level": _sparam,
     "manufacturing_margin": _mfg,
 }

@@ -116,6 +116,10 @@ class ExperimentBuilder:
         hf = self.cfg["high_fidelity"]
         if hf["kind"] == "synthetic_oracle":
             return AnalyticCheckerboardOracle(hf.get("conditions"), self.schema.metadata.get("template_map"))
+        if hf["kind"] == "ring_disc_array_model":
+            from metasurface_optimizer.solvers.ring_disc_array import RingDiscArrayModel
+
+            return RingDiscArrayModel(hf.get("conditions"), self.root, bistatic=bool(hf.get("bistatic", False)))
         raise ValueError(f"High-fidelity kind {hf['kind']!r} cannot run automatically; use the human-in-the-loop API")
 
     def pguco_config(self, seed: int, overrides: Optional[Dict[str, Any]] = None) -> PGUCOConfig:

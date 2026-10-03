@@ -1,0 +1,38 @@
+# Song et al., IEEE AWPL 15, 329-331 (2016): random-phase ring+disc metasurface, 30 x 30 cells of 10 mm.
+# Array-level design rule (see metasurface_optimizer/solvers/ring_disc_array.py). Defaults = the paper's design.
+# The cell itself (k2, k3, h, eps_r) is fixed: the Fig. 2 calibration is only valid for the paper's cell.
+name: song2016_ring_disc_array
+version: "1.0"
+length_unit: mm
+manufacturing:
+  min_gap: 1.0            # mm between neighbouring rings at R1 = 4.5 (10 mm period)
+  min_feature: 0.12       # mm, ring width 0.08 R1 at R1 = 1.5
+parameters:
+  - {name: f1, type: continuous, min: 6.5, max: 8.0, unit: GHz, default: 7.2, step: 0.2, resolution: 0.01, role: frequency, description: design frequency of sub-array 1}
+  - {name: f2, type: continuous, min: 7.3, max: 9.0, unit: GHz, default: 8.0, step: 0.2, resolution: 0.01, role: frequency}
+  - {name: f3, type: continuous, min: 8.2, max: 10.5, unit: GHz, default: 9.0, step: 0.2, resolution: 0.01, role: frequency}
+  - {name: f4, type: continuous, min: 9.5, max: 12.5, unit: GHz, default: 10.8, step: 0.2, resolution: 0.01, role: frequency}
+  - {name: phase_span, type: continuous, min: 0.6, max: 1.0, unit: "1", default: 1.0, step: 0.05, resolution: 0.001, role: other, description: fraction of the reachable phase range used by the random targets}
+  - {name: r1_min, type: continuous, min: 1.5, max: 2.5, unit: mm, default: 1.5, step: 0.1, resolution: 0.01, role: length}
+  - {name: r1_max, type: continuous, min: 3.8, max: 4.5, unit: mm, default: 4.5, step: 0.1, resolution: 0.01, role: length}
+  - {name: period, type: continuous, min: 10.0, max: 10.0, unit: mm, default: 10.0, fixed: true, role: period}
+  - {name: k2, type: continuous, min: 0.92, max: 0.92, unit: "1", default: 0.92, fixed: true, role: other, description: R2 / R1 (ring inner radius)}
+  - {name: k3, type: continuous, min: 0.8, max: 0.8, unit: "1", default: 0.8, fixed: true, role: other, description: R3 / R1 (disc radius)}
+  - {name: substrate_thickness, type: continuous, min: 3.0, max: 3.0, unit: mm, default: 3.0, fixed: true, role: thickness}
+  - {name: eps_r, type: continuous, min: 4.4, max: 4.4, unit: "1", default: 4.4, fixed: true, role: permittivity}
+  - {name: tan_delta, type: continuous, min: 0.02, max: 0.02, unit: "1", default: 0.02, fixed: true, role: loss_tangent}
+linear_constraints:
+  - {name: f_order_12, coeffs: {f1: 1.0, f2: -1.0}, rhs: -0.3, description: "f1 <= f2 - 0.3 GHz"}
+  - {name: f_order_23, coeffs: {f2: 1.0, f3: -1.0}, rhs: -0.3}
+  - {name: f_order_34, coeffs: {f3: 1.0, f4: -1.0}, rhs: -0.3}
+  - {name: r1_range, coeffs: {r1_min: 1.0, r1_max: -1.0}, rhs: -1.5, description: "r1_max - r1_min >= 1.5 mm"}
+correlated_directions:
+  - name: shift_all_up
+    description: Move all four sub-array design frequencies up together (shifts the reduction band)
+    direction: {f1: 1.0, f2: 1.0, f3: 1.0, f4: 1.0}
+  - name: spread
+    description: Spread the design frequencies (wider, possibly multiband)
+    direction: {f1: -1.0, f2: -0.3, f3: 0.3, f4: 1.0}
+metadata:
+  description: "Song et al. 2016 (AWPL) ultra-broadband backscatter RCS metasurface; defaults reproduce the published design rule"
+  source: "Y.-C. Song, J. Ding, C.-J. Guo, Y.-H. Ren, J.-K. Zhang, IEEE AWPL 15, 329-331, 2016, doi:10.1109/LAWP.2015.2443853"
