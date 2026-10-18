@@ -26,14 +26,18 @@ from typing import Dict, Optional, Sequence
 
 import numpy as np
 
-OPENEMS_DIR = os.environ.get("OPENEMS_DIR", r"C:\Users\anand\Downloads\openEMS_x64_v0.37.0-rc1_msvc\openEMS")
+OPENEMS_DIR = os.environ.get("OPENEMS_DIR", "")  # folder with openEMS.dll; on Windows found on PATH if unset
 C0 = 299_792_458.0
 EPS0 = 8.8541878128e-12
 
 
 def _import():
-    if os.name == "nt" and os.path.isdir(OPENEMS_DIR):
-        os.add_dll_directory(OPENEMS_DIR)
+    if os.name == "nt":
+        dirs = [OPENEMS_DIR] if OPENEMS_DIR else [d for d in os.environ.get("PATH", "").split(os.pathsep)
+                                                  if d and os.path.isfile(os.path.join(d, "openEMS.dll"))]
+        for d in dirs:
+            if os.path.isdir(d):
+                os.add_dll_directory(d)
     from CSXCAD import ContinuousStructure
     from openEMS import openEMS
     return ContinuousStructure, openEMS

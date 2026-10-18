@@ -1,0 +1,294 @@
+{
+ "mean_abs_deg": 17.023307424376707,
+ "median_abs_deg": 13.23152026626713,
+ "max_abs_deg": 73.26229821993516,
+ "mean_abs_deg_by_frequency": {
+  "7.2GHz": 8.11373512914453,
+  "8GHz": 12.809401937014576,
+  "9GHz": 22.520719803260466,
+  "10.8GHz": 24.64937282808726
+ },
+ "mean_abs_deg_r1_le_2p5": 4.926526674253646,
+ "points": [
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 1.5,
+   "paper_deg": 109.0,
+   "openems_deg_wrapped": 109.05591398285858,
+   "error_deg": 0.055913982858585336
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 2.0,
+   "paper_deg": 106.0,
+   "openems_deg_wrapped": 103.53353466920873,
+   "error_deg": -2.466465330791259
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 2.5,
+   "paper_deg": 95.0,
+   "openems_deg_wrapped": 90.77958973359361,
+   "error_deg": -4.220410266406394
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 3.0,
+   "paper_deg": 71.0,
+   "openems_deg_wrapped": 56.93836650380091,
+   "error_deg": -14.061633496199084
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 3.25,
+   "paper_deg": 6.0,
+   "openems_deg_wrapped": 16.687907233339647,
+   "error_deg": 10.687907233339647
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 3.5,
+   "paper_deg": -44.0,
+   "openems_deg_wrapped": -48.204321573280524,
+   "error_deg": -4.20432157328053
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 3.75,
+   "paper_deg": -107.0,
+   "openems_deg_wrapped": -113.14134796380438,
+   "error_deg": -6.141347963804388
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 4.0,
+   "paper_deg": -141.0,
+   "openems_deg_wrapped": -154.1531891247504,
+   "error_deg": -13.153189124750407
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 4.25,
+   "paper_deg": -163.0,
+   "openems_deg_wrapped": 179.74111805101538,
+   "error_deg": -17.258881948984623
+  },
+  {
+   "f_GHz": 7.2,
+   "r1_mm": 4.5,
+   "paper_deg": -192.0,
+   "openems_deg_wrapped": 159.11271962896961,
+   "error_deg": -8.887280371030391
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 1.5,
+   "paper_deg": 95.0,
+   "openems_deg_wrapped": 94.53959008224193,
+   "error_deg": -0.4604099177580855
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 2.0,
+   "paper_deg": 82.0,
+   "openems_deg_wrapped": 85.27941699679232,
+   "error_deg": 3.2794169967923206
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 2.5,
+   "paper_deg": 62.0,
+   "openems_deg_wrapped": 62.26501969415548,
+   "error_deg": 0.26501969415548093
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 3.0,
+   "paper_deg": 21.0,
+   "openems_deg_wrapped": -4.821612932513424,
+   "error_deg": -25.82161293251342
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 3.25,
+   "paper_deg": -88.0,
+   "openems_deg_wrapped": -68.62409393651424,
+   "error_deg": 19.375906063485754
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 3.5,
+   "paper_deg": -115.0,
+   "openems_deg_wrapped": -125.63128559343309,
+   "error_deg": -10.631285593433102
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 3.75,
+   "paper_deg": -154.0,
+   "openems_deg_wrapped": -163.72014085979603,
+   "error_deg": -9.720140859796004
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 4.0,
+   "paper_deg": -175.0,
+   "openems_deg_wrapped": 169.47277136152016,
+   "error_deg": -15.527228638479837
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 4.25,
+   "paper_deg": -190.0,
+   "openems_deg_wrapped": 144.55924163877185,
+   "error_deg": -25.440758361228145
+  },
+  {
+   "f_GHz": 8.0,
+   "r1_mm": 4.5,
+   "paper_deg": -230.0,
+   "openems_deg_wrapped": 112.42775968749642,
+   "error_deg": -17.5722403125036
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 1.5,
+   "paper_deg": 73.0,
+   "openems_deg_wrapped": 71.53197564495045,
+   "error_deg": -1.4680243550495489
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 2.0,
+   "paper_deg": 57.0,
+   "openems_deg_wrapped": 55.12713500410604,
+   "error_deg": -1.872864995893964
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 2.5,
+   "paper_deg": 24.0,
+   "openems_deg_wrapped": 10.690148592216145,
+   "error_deg": -13.309851407783855
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 3.0,
+   "paper_deg": -59.0,
+   "openems_deg_wrapped": -92.24882962030921,
+   "error_deg": -33.248829620309195
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 3.25,
+   "paper_deg": -142.0,
+   "openems_deg_wrapped": -144.4385664029514,
+   "error_deg": -2.4385664029514027
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 3.5,
+   "paper_deg": -174.0,
+   "openems_deg_wrapped": 178.14608695537896,
+   "error_deg": -7.853913044621059
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 3.75,
+   "paper_deg": -195.0,
+   "openems_deg_wrapped": 144.96598641868803,
+   "error_deg": -20.03401358131196
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 4.0,
+   "paper_deg": -221.0,
+   "openems_deg_wrapped": 103.63458623405178,
+   "error_deg": -35.36541376594823
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 4.25,
+   "paper_deg": -248.0,
+   "openems_deg_wrapped": 38.73770178006485,
+   "error_deg": -73.26229821993516
+  },
+  {
+   "f_GHz": 9.0,
+   "r1_mm": 4.5,
+   "paper_deg": -364.0,
+   "openems_deg_wrapped": -40.35342263880028,
+   "error_deg": -36.35342263880029
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 1.5,
+   "paper_deg": 21.0,
+   "openems_deg_wrapped": 16.125213104801745,
+   "error_deg": -4.874786895198261
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 2.0,
+   "paper_deg": -12.0,
+   "openems_deg_wrapped": -18.617788876003218,
+   "error_deg": -6.617788876003214
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 2.5,
+   "paper_deg": -77.0,
+   "openems_deg_wrapped": -97.22736737235279,
+   "error_deg": -20.22736737235278
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 3.0,
+   "paper_deg": -175.0,
+   "openems_deg_wrapped": 158.26247886512337,
+   "error_deg": -26.73752113487663
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 3.25,
+   "paper_deg": -236.0,
+   "openems_deg_wrapped": 89.12155941077637,
+   "error_deg": -34.878440589223615
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 3.5,
+   "paper_deg": -296.0,
+   "openems_deg_wrapped": -0.00296118607349585,
+   "error_deg": -64.00296118607349
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 3.75,
+   "paper_deg": -379.0,
+   "openems_deg_wrapped": -70.48459476498968,
+   "error_deg": -51.484594764989694
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 4.0,
+   "paper_deg": -447.0,
+   "openems_deg_wrapped": -107.19078377638894,
+   "error_deg": -20.19078377638892
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 4.25,
+   "paper_deg": -470.0,
+   "openems_deg_wrapped": -127.46447306208859,
+   "error_deg": -17.464473062088633
+  },
+  {
+   "f_GHz": 10.8,
+   "r1_mm": 4.5,
+   "paper_deg": -500.0,
+   "openems_deg_wrapped": -140.01501062367743,
+   "error_deg": -0.01501062367737659
+  }
+ ]
+}

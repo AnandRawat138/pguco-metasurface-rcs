@@ -30,6 +30,12 @@ The method, with every implemented equation, is in [docs/methodology.md](docs/me
 - Benchmarks report all seeds (mean, std, median, best, worst, bootstrap CI). Defaults were tuned on
   seeds {0, 1}; reported runs use disjoint seeds 10–14.
 
+## Data and reproduction of the AEU manuscript
+
+The full-wave openEMS cell database and all results of the manuscript on the Song et al. (2016) RCS metasurface
+are in [`data/`](data/README.md); `examples/07_robust_cf_study.py` reproduces Section 6 from that database in about
+10 minutes, and `metasurface_optimizer/solvers/openems_cell_grid.py` rebuilds the database with openEMS.
+
 ## Install
 
 ```bash
