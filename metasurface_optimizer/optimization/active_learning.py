@@ -572,6 +572,9 @@ class CounterfactualOptimizer:
             pred_err = {"n": len(pc), "composite_rmse": float(np.sqrt(np.mean((pc - vc) ** 2))), "composite_mae": float(np.mean(np.abs(pc - vc))),
                         "J_rmse": np.sqrt(np.mean((pj - vj) ** 2, 0)).tolist(), "J_mae": np.mean(np.abs(pj - vj), 0).tolist(),
                         "note": "out-of-sample: each prediction was made before the design was evaluated"}
+            its = np.array([p["iteration"] for p in self.prediction_log])
+            pred_err["per_iteration"] = [{"iteration": int(i), "n": int((its == i).sum()), "composite_mae": float(np.mean(np.abs(pc - vc)[its == i]))}
+                                         for i in sorted(set(its.tolist()))]
         return {
             "algorithm": "PGUCO (physics-guided uncertainty-aware counterfactual local optimisation)",
             "config": self.cfg.to_dict(),

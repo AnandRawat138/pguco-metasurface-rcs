@@ -183,6 +183,7 @@ class ArrayConditions:
     n_cells: int = 30
     layout_seed: int = 1
     cell_table: Optional[str] = None
+    bistatic_grid: str = "full"  # full | specular (only (theta_inc, phi_inc) and (theta_inc, phi_inc + 180): fast)
 
     @classmethod
     def from_mapping(cls, m: Optional[Mapping[str, Any]]) -> "ArrayConditions":
@@ -196,7 +197,7 @@ class ArrayConditions:
                 v = tuple(float(a) for a in v) if k == "theta_inc" else tuple(v)
             elif k in ("n_freq", "n_cells", "layout_seed"):
                 v = int(float(v))
-            elif k != "cell_table":
+            elif k not in ("cell_table", "bistatic_grid"):
                 v = float(v)
             out[k] = v
         return cls(**out)
@@ -212,8 +213,12 @@ def array_rcs(cell: RingDiscCell, R1: np.ndarray, period_mm: float, c: ArrayCond
     X, Y = np.meshgrid(xs, xs[::-1])
     r1f = R1.ravel()
     uniq, inv = np.unique(np.round(r1f, 4), return_inverse=True)
-    theta_s = np.arange(0.0, 90.0, c.theta_s_step) if bistatic else None
-    phi_s = np.arange(0.0, 360.0, c.phi_s_step) if bistatic else None
+    if bistatic and c.bistatic_grid == "specular":
+        theta_s = np.unique(np.abs(np.asarray(c.theta_inc, float)))
+        phi_s = np.mod(np.array([c.phi_inc, c.phi_inc + 180.0]), 360.0)
+    else:
+        theta_s = np.arange(0.0, 90.0, c.theta_s_step) if bistatic else None
+        phi_s = np.arange(0.0, 360.0, c.phi_s_step) if bistatic else None
     pols, th_inc = list(c.polarizations), np.asarray(c.theta_inc, float)
     mono = np.empty((len(pols), len(th_inc), len(f)))
     ref = np.empty_like(mono)
