@@ -38,8 +38,9 @@ NAMES = ["f1", "f2", "f3", "f4", "kappa2", "kappa3", "h"]
 UNITS = ["GHz", "GHz", "GHz", "GHz", "", "", "mm"]
 X0 = np.array([7.2, 8.0, 9.0, 10.8, 0.92, 0.80, 3.0])
 LO = np.array([6.5, 7.3, 8.2, 9.5, 0.86, 0.66, 3.0])
-HI = np.array([8.0, 9.0, 10.5, 12.5, 0.933, 0.863, 3.2])
-H_SET = np.array([3.0, 3.2])
+HI = np.array([8.0, 9.0, 10.5, 12.5, 0.933, 0.863, 3.0])  # h fixed at the published 3.0 mm (cell database complete for h = 3.0 only)
+SPAN = np.where(HI > LO, HI - LO, 1.0)
+H_SET = np.array([3.0])
 EPS_SET = (4.2, 4.4, 4.6)
 THETA_SET = (0.0, 10.0, 20.0, 30.0)
 POLS = ("TE", "TM")
@@ -57,7 +58,7 @@ def snap(x: np.ndarray) -> np.ndarray:
 
 
 def to_u(x):
-    return (np.asarray(x, float) - LO) / (HI - LO)
+    return (np.asarray(x, float) - LO) / SPAN
 
 
 def from_u(u):
