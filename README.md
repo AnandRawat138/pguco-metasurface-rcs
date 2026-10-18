@@ -151,3 +151,7 @@ reproduction gate, predicted-vs-simulated feedback, UI tab). **Not yet run again
 See `outputs/demo_checkerboard_synthetic/` (benchmark/comparison_table.csv, ablation/ablation_table.csv,
 the report PDF). A first benchmark run that preceded a sensitivity bug fix (identical numbers) is kept in
 `outputs/superseded_run1_zero_hf_sensitivity/` with an explanation.
+
+## License
+
+MIT, see [LICENSE](LICENSE). The data in `data/` are released under the same terms.
